@@ -38,3 +38,31 @@ pDetection.set_silence(-40)
 
 q = queue.Queue()
 
+
+def get_current_note(volume_thresh=0.01, printOut=False):
+    current_pitch = music21.pitch.Pitch()
+
+    while True:
+
+        data = stream.read(1024, exception_on_overflow=False)
+        samples = np.fromstring(data,
+                                dtype=aubio.float_type)
+        pitch = pDetection(samples)[0]
+
+        # Compute the energy (volume) of current frame
+        volume = np.sum(samples**2)/len(samples) * 100
+
+        if pitch and volume > volume_thresh:
+            current_pitch.frequency = pitch
+        else:
+            continue
+
+        if printOut:
+            print(current_pitch)
+        
+        else:
+            current = current_pitch.nameWithOctave
+            q.put({'Note': current, 'Cents': current_pitch.microtone.cents})
+
+if __name__ == '__main__':
+    get_current_note(volume_thresh=0.001, printOut=True)
