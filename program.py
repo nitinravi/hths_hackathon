@@ -42,11 +42,18 @@ while running:
 
     screen.fill((0, 0, 0))
 
+    # draw line to show visually how far away from note voice is
+    pygame.draw.line(screen, (255, 255, 255), (10, 290), (10, 310))
+    pygame.draw.line(screen, (255, 255, 255), (screenWidth - 10, 290),
+                     (screenWidth - 10, 310))
+    pygame.draw.line(screen, (255, 255, 255), (10, 300),
+                     (screenWidth - 10, 300))
+
     # our user should be singing if there's a note on the queue
     if not q.empty():
         b = q.get()
         if b['Cents'] < 15:
-            pygame.draw.circle(screen, (0, 128, 0), 
+            pygame.draw.circle(screen, (0, 128, 0),
                                (screenWidth // 2 + (int(b['Cents']) * 2),300),
                                5)
         else:
@@ -55,7 +62,32 @@ while running:
                                5)
 
         noteText = noteFont.render(b['Note'], True, (0, 128, 0))
+        if b['Note'] == noteHeldCurrently:
+            noteHeld += 1
+            if noteHeld == noteHoldLength:
+                if not have_low:
+                    low_note = noteHeldCurrently
+                    have_low = True
+                    titleCurr = titleFont.render("High Note", True,
+                                                 (128, 128, 0))
+                else:
+                    if int(noteHeldCurrently[-1]) <= int(low_note[-1]):
+                        noteHeld = 0  # we're holding a lower octave note
+                    elif int(noteHeldCurrently[-1]) and not high_note:
+                        high_note = noteHeldCurrently
+                        have_high = True
+                        titleText = titleFont.render("Perfect!", True,
+                                                     (0, 128, 0))
+                        titleCurr = titleFont.render("%s to %s" %
+                                                     (low_note, high_note),
+                                                     True, (0, 128, 0))
+        else:
+            noteHeldCurrently = b['Note']
+            noteHeld = 1
+        screen.blit(noteText, (50, 400))
+
     screen.blit(titleText, (10,  80))
     screen.blit(titleCurr, (10, 120))
     pygame.display.flip()
     clock.tick(30)
+

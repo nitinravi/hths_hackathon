@@ -7,7 +7,9 @@ import argparse
 
 import queue
 
-import music21
+import music21  # yes! new favorite library
+
+y_val=[]
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-input", required=False, type=int, help="Audio Input Device")
@@ -31,7 +33,7 @@ stream = p.open(format=pyaudio.paFloat32,
 time.sleep(1)
 
 # Aubio's pitch detection.
-pDetection = aubio.pitch("default", 2048, 2048//2, 44100)
+pDetection = aubio.pitch("default", 2048, 2048 // 2, 44100)
 # Set unit.
 pDetection.set_unit("Hz")
 pDetection.set_silence(-40)
@@ -39,9 +41,9 @@ pDetection.set_silence(-40)
 q = queue.Queue()
 
 
-def get_current_note(volume_thresh=0.005, printOut=False):
+def get_current_note(volume_thresh=0.01, printOut=False):
     """Returns the Note Currently Played on the q object when audio is present
-    
+
     Keyword arguments:
 
     volume_thresh -- the volume threshold for input. defaults to 0.01
@@ -56,20 +58,32 @@ def get_current_note(volume_thresh=0.005, printOut=False):
                                 dtype=aubio.float_type)
         pitch = pDetection(samples)[0]
 
-        # Compute the energy (volume) of current frame
-        volume = np.sum(samples**2)/len(samples) * 100
+        # Compute the energy (volume) of the
+        # current frame.
+        volume = np.sum(samples ** 2) / len(samples) * 100
 
-        if pitch and volume > volume_thresh:
+        if pitch and volume > volume_thresh:  # adjust with your mic!
             current_pitch.frequency = pitch
         else:
             continue
 
         if printOut:
             print(current_pitch)
-        
+            a=str(current_pitch)
+            x=a.split('(')
+            y_val.append(x[0])
+            lex=len(y_val)-1
+            with open("output.txt", "a") as f:
+                f.write(y_val[lex])
+                f.write('\n')
+            f.close()
+
+
         else:
             current = current_pitch.nameWithOctave
             q.put({'Note': current, 'Cents': current_pitch.microtone.cents})
 
+
 if __name__ == '__main__':
     get_current_note(volume_thresh=0.001, printOut=True)
+
