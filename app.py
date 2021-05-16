@@ -21,3 +21,20 @@ if not args.input:
     print("Run this program with -input 1, or the number of the input you'd like to use.")
     exit()
 
+# PyAudio object.
+p = pyaudio.PyAudio()
+
+# Open stream.
+stream = p.open(format=pyaudio.paFloat32,
+                channels=1, rate=44100, input=True,
+                input_device_index=args.input, frames_per_buffer=4096)
+time.sleep(1)
+
+# Aubio's pitch detection.
+pDetection = aubio.pitch("default", 2048, 2048//2, 44100)
+# Set unit.
+pDetection.set_unit("Hz")
+pDetection.set_silence(-40)
+
+q = queue.Queue()
+
