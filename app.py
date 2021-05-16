@@ -39,7 +39,14 @@ pDetection.set_silence(-40)
 q = queue.Queue()
 
 
-def get_current_note(volume_thresh=0.01, printOut=False):
+def get_current_note(volume_thresh=0.005, printOut=False):
+    """Returns the Note Currently Played on the q object when audio is present
+    
+    Keyword arguments:
+
+    volume_thresh -- the volume threshold for input. defaults to 0.01
+    printOut -- whether or not to print to the terminal. defaults to False
+    """
     current_pitch = music21.pitch.Pitch()
 
     while True:
