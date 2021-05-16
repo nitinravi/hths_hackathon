@@ -1,3 +1,4 @@
 aubio
 pyaudio
 music21
+pygame
